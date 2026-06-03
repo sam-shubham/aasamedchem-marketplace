@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getAccessToken, getStoredUser, clearAccessToken, removeStoredUser, setAccessToken, setStoredUser } from '@/utils/storage';
+import { getAccessToken, getStoredUser, clearAuthStorage, setStoredUser } from '@/utils/storage';
 
 export type AuthUser = {
  id: string;
@@ -52,8 +52,7 @@ export const useAuthStore = create<AuthState>((set) => ({
  },
 
  logout: () => {
- clearAccessToken();
- removeStoredUser();
+ clearAuthStorage();
  set({ step: 'login', isAuthenticated: false, user: null, hasChecked: true });
  },
 }));

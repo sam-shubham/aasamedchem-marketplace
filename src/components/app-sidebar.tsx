@@ -1,47 +1,48 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
-import {
-  LayoutDashboardIcon,
-  PackageIcon,
-  FileTextIcon,
-  ShoppingCartIcon,
-  Settings2Icon,
-} from "lucide-react";
+import Image from "next/image";
 import { NavMain, NavUser } from "@/components/nav-main";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarRail,
   SidebarGroup,
   SidebarGroupLabel,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useAuthStore } from "@/lib/auth-store";
 
 function AasaLogo({ collapsed }: { collapsed: boolean }) {
-  return (
-    <div
-      className={`flex items-center ${collapsed ? "justify-center w-full" : "gap-3 px-3"}`}
-    >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary font-bold text-primary-foreground">
-        A
-      </div>
-      {!collapsed && (
-        <div className="min-w-0">
-          <span className="truncate text-base font-bold tracking-tight text-foreground">
-            AasaMedChem
-          </span>
-          <span className="block truncate text-xs text-muted-foreground">
-            Inventory & Order
-          </span>
+  if (collapsed) {
+    // Icon-only: show just the "A" mark (left portion of the logo)
+    return (
+      <div className="flex items-center justify-center w-full">
+        <div className="relative h-8 w-8 overflow-hidden rounded-lg flex items-center justify-center">
+          <Image
+            src="/logo2.webp"
+            alt="AasaMedChem"
+            width={120}
+            height={40}
+            className="object-cover object-left scale-[2.4] translate-x-[-18%]"
+            priority
+          />
         </div>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center px-1">
+      <Image
+        src="/logo2.webp"
+        alt="AasaMedChem"
+        width={148}
+        height={48}
+        className="object-contain"
+        style={{ maxHeight: 40, width: 'auto' }}
+        priority
+      />
     </div>
   );
 }
@@ -49,10 +50,9 @@ function AasaLogo({ collapsed }: { collapsed: boolean }) {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
-  const user = useAuthStore((s) => s.user);
 
   return (
-    <Sidebar collapsible="none" {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <AasaLogo collapsed={isCollapsed} />
       </SidebarHeader>

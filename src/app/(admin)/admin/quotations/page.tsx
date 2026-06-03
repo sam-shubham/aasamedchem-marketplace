@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+ Select,
+ SelectContent,
+ SelectItem,
+ SelectTrigger,
+ SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 const STATUS_CONFIG: Record<string, { label: string; className: string; icon: string }> = {
@@ -182,14 +189,14 @@ function QuotationCard({ quotation, onStatusChange }: { quotation: Quotation; on
 export default function AdminQuotationsPage() {
  const [quotations, setQuotations] = useState<Quotation[]>([]);
  const [loading, setLoading] = useState(true);
- const [filter, setFilter] = useState("");
+ const [filter, setFilter] = useState("ALL");
  const [updating, setUpdating] = useState<string | null>(null);
 
  useEffect(() => { load(); }, [filter]);
 
  async function load() {
  setLoading(true);
- const url = filter ? `/api/quotations?status=${filter}` : "/api/quotations";
+ const url = filter && filter !== "ALL" ? `/api/quotations?status=${filter}` : "/api/quotations";
  const res = await fetch(url);
  const data = await res.json();
  setQuotations(data);
@@ -226,17 +233,18 @@ export default function AdminQuotationsPage() {
  Review, approve, and manage incoming quotations
  </p>
  </div>
- <select
- value={filter}
- onChange={(e) => setFilter(e.target.value)}
- className="h-10 px-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
- >
- <option value="">All statuses</option>
- <option value="PENDING">Pending</option>
- <option value="APPROVED">Approved</option>
- <option value="REJECTED">Rejected</option>
- <option value="FULFILLED">Fulfilled</option>
- </select>
+ <Select value={filter} onValueChange={setFilter}>
+ <SelectTrigger className="h-9 rounded-xl text-sm">
+ <SelectValue placeholder="All statuses" />
+ </SelectTrigger>
+ <SelectContent>
+ <SelectItem value="ALL">All statuses</SelectItem>
+ <SelectItem value="PENDING">Pending</SelectItem>
+ <SelectItem value="APPROVED">Approved</SelectItem>
+ <SelectItem value="REJECTED">Rejected</SelectItem>
+ <SelectItem value="FULFILLED">Fulfilled</SelectItem>
+ </SelectContent>
+ </Select>
  </div>
 
  {/* Content */}
@@ -250,11 +258,11 @@ export default function AdminQuotationsPage() {
  <div className="text-center">
  <p className="text-sm font-medium text-foreground">No quotations found</p>
  <p className="text-xs text-muted-foreground mt-0.5">
- {filter ? `No ${STATUS_CONFIG[filter]?.label.toLowerCase() ?? filter} quotations` : "No quotations submitted yet"}
+ {filter && filter !== "ALL" ? `No ${STATUS_CONFIG[filter]?.label.toLowerCase() ?? filter} quotations` : "No quotations submitted yet"}
  </p>
  </div>
- {filter && (
- <Button variant="outline" size="sm" onClick={() => setFilter("")} className="rounded-xl gap-1.5">
+ {filter && filter !== "ALL" && (
+ <Button variant="outline" size="sm" onClick={() => setFilter("ALL")} className="rounded-xl gap-1.5">
  Clear filter
  </Button>
  )}

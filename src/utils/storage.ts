@@ -40,9 +40,20 @@ export function removeStoredUser(): void {
     window.localStorage.removeItem(TOKEN_KEYS.USER);
 }
 
+export function clearCartStorage(): void {
+    if (typeof window === 'undefined') return;
+
+    for (const key of Object.keys(window.localStorage)) {
+        if (key.startsWith('sellerCart:')) {
+            window.localStorage.removeItem(key);
+        }
+    }
+}
+
 // ─── Clear all auth state ────────────────────────────────────────────────────
 
 export function clearAuthStorage(): void {
     clearAccessToken();
     removeStoredUser();
+    clearCartStorage();
 }
