@@ -67,12 +67,34 @@ export async function POST(req: NextRequest) {
  })
  );
 
- // Stock deduction
+ // Stock deduction + low-stock alert
  for (const item of lineItems) {
- await prisma.product.update({
+ const updated = await prisma.product.update({
  where: { id: item.productId },
  data: { stockQuantity: { decrement: item.baseQty } },
  });
+
+ // Check if stock fell below reorder threshold
+ if (updated.reorderThreshold) {
+ const currentStock = parseFloat(updated.stockQuantity.toString());
+ const threshold = parseFloat(updated.reorderThreshold.toString());
+ if (currentStock < threshold) {
+ const admins = await prisma.user.findMany({
+ where: { role: "ADMIN" },
+ select: { id: true },
+ });
+ await prisma.notification.createMany({
+ data: admins.map((a) => ({
+ userId: a.id,
+ event: "LOW_STOCK",
+ title: "Low Stock Alert",
+ message: `${updated.name} is below reorder threshold (${currentStock.toFixed(2)} remaining).`,
+ type: "WARNING",
+ link: "/admin/products",
+ })),
+ });
+ }
+ }
  }
 
  const subtotal = lineItems.reduce((s, i) => s + i.lineTotal, 0);
@@ -95,6 +117,24 @@ export async function POST(req: NextRequest) {
  requestedBy: { select: { name: true, email: true } },
  items: { include: { product: { include: { units: true } } } },
  },
+ });
+
+ // Notify all admins when a new quotation is submitted
+ const admins = await prisma.user.findMany({
+ where: { role: "ADMIN" },
+ select: { id: true },
+ });
+ const ref = quotation.reference?.slice(0, 8).toUpperCase() ?? quotation.id.slice(0, 8).toUpperCase();
+ await prisma.notification.createMany({
+ data: admins.map((a) => ({
+ userId: a.id,
+ event: "QUOTATION_SUBMITTED",
+ title: "New Quotation Received",
+ message: `${session.user.name} submitted quotation #${ref} for ₹${(totalAmount / 100).toLocaleString("en-IN", { minimumFractionDigits: 2 })}.`,
+ type: "INFO",
+ link: "/admin/quotations",
+ quotationId: quotation.id,
+ })),
  });
 
  return NextResponse.json(quotation, { status: 201 });

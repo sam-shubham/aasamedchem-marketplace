@@ -67,6 +67,12 @@ const navItems: NavItem[] = [
     roles: ["ADMIN"],
   },
   {
+    title: "Sellers",
+    url: "/admin/sellers",
+    icon: UserIcon,
+    roles: ["ADMIN"],
+  },
+  {
     title: "Dashboard",
     url: "/seller/dashboard",
     icon: LayoutDashboardIcon,

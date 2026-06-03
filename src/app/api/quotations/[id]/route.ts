@@ -39,5 +39,41 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
  },
  });
 
+ // Create a notification for the seller on every status change
+ const eventConfig: Record<string, { title: string; message: string; type: "INFO" | "WARNING" | "SUCCESS" }> = {
+ APPROVED: {
+ title: "Quotation Approved",
+ message: `Your quotation #${quotation.reference?.slice(0, 8).toUpperCase() ?? id.slice(0, 8).toUpperCase()} has been approved.`,
+ type: "SUCCESS",
+ },
+ REJECTED: {
+ title: "Quotation Rejected",
+ message: `Your quotation #${quotation.reference?.slice(0, 8).toUpperCase() ?? id.slice(0, 8).toUpperCase()} was not approved. Contact admin for more info.`,
+ type: "WARNING",
+ },
+ FULFILLED: {
+ title: "Order Fulfilled",
+ message: `Order #${quotation.reference?.slice(0, 8).toUpperCase() ?? id.slice(0, 8).toUpperCase()} has been fulfilled and is on its way.`,
+ type: "SUCCESS",
+ },
+ };
+
+ const cfg = eventConfig[status];
+ if (cfg) {
+ await prisma.notification.create({
+ data: {
+ userId: quotation.requestedById,
+ event: `QUOTATION_${status}`,
+ title: cfg.title,
+ message: cfg.message,
+ type: cfg.type,
+ link: `/seller/orders`,
+ quotationId: quotation.id,
+ },
+ });
+ }
+
+ // Also notify admin on new pending quotation (seller submits a quotation)
+ // This is handled in the POST /api/quotations route
  return NextResponse.json(quotation);
 }

@@ -2,8 +2,15 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { SearchIcon, BellIcon, XIcon } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  SearchIcon,
+  BellIcon,
+  XIcon,
+  CheckIcon,
+  AlertTriangleIcon,
+  CheckCircleIcon,
+} from "lucide-react";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   SidebarInset,
@@ -27,39 +34,28 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-
-const NOTIFICATIONS = [
-  {
-    id: "1",
-    title: "Low stock alert",
-    detail: "Paracetamol base unit below reorder threshold",
-    time: "5 min ago",
-    read: false,
-    type: "warning",
-  },
-  {
-    id: "2",
-    title: "New order received",
-    detail: "Seller John Doe placed a quotation",
-    time: "1 hr ago",
-    read: false,
-    type: "info",
-  },
-  {
-    id: "3",
-    title: "Quotation fulfilled",
-    detail: "Order #ABC12345 has been marked as fulfilled",
-    time: "2 hr ago",
-    read: true,
-    type: "success",
-  },
-];
+import { useNotifStore } from "@/lib/notif-store";
 
 const NOTIF_COLORS = {
-  warning: { bg: "bg-amber-500/10", icon: "bg-amber-500", dot: "bg-amber-500" },
-  info: { bg: "bg-primary/10", icon: "bg-primary", dot: "bg-primary" },
-  success: { bg: "bg-emerald-500/10", icon: "bg-emerald-500", dot: "bg-emerald-500" },
+  WARNING: { bg: "bg-amber-500/10", icon: "bg-amber-500", text: "text-amber-600 dark:text-amber-400", dot: "bg-amber-500", iconComponent: AlertTriangleIcon },
+  INFO: { bg: "bg-primary/10", icon: "bg-primary", text: "text-primary", dot: "bg-primary", iconComponent: BellIcon },
+  SUCCESS: { bg: "bg-emerald-500/10", icon: "bg-emerald-500", text: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500", iconComponent: CheckCircleIcon },
 };
+
+function formatNotifTime(createdAtStr: string) {
+  try {
+    const date = new Date(createdAtStr);
+    const diffMs = Date.now() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHrs = Math.floor(diffMins / 60);
+    if (diffHrs < 24) return `${diffHrs}h ago`;
+    return date.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  } catch {
+    return "";
+  }
+}
 
 function getBreadcrumbItems(pathname: string) {
   const segments = pathname.split("/").filter(Boolean);
@@ -87,12 +83,46 @@ function getBreadcrumbItems(pathname: string) {
 
 function ShellHeader() {
   const pathname = usePathname();
+  const router = useRouter();
   const [notificationsOpen, setNotificationsOpen] = React.useState(false);
-  const unreadCount = NOTIFICATIONS.filter((n) => !n.read).length;
+
+  const {
+    notifications,
+    unreadCount,
+    isLoading,
+    fetchNotifications,
+    fetchCount,
+    markRead,
+    markAllRead,
+  } = useNotifStore();
+
   const breadcrumbItems = React.useMemo(
     () => getBreadcrumbItems(pathname),
     [pathname],
   );
+
+  React.useEffect(() => {
+    fetchCount();
+    // Poll unread count every 30 seconds
+    const interval = setInterval(() => {
+      fetchCount();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [fetchCount]);
+
+  React.useEffect(() => {
+    if (notificationsOpen) {
+      fetchNotifications();
+    }
+  }, [notificationsOpen, fetchNotifications]);
+
+  const handleNotifClick = (n: any) => {
+    markRead(n.id);
+    setNotificationsOpen(false);
+    if (n.link) {
+      router.push(n.link);
+    }
+  };
 
   return (
     <>
@@ -180,43 +210,80 @@ function ShellHeader() {
                   <p className="text-xs text-muted-foreground">{unreadCount} unread</p>
                 </div>
               </div>
+
+              {unreadCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => markAllRead()}
+                  className="text-xs text-primary hover:text-primary/80 hover:bg-primary/5 rounded-lg flex items-center gap-1"
+                >
+                  <CheckIcon className="size-3.5" /> Mark all read
+                </Button>
+              )}
             </div>
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto">
-            <div className="divide-y divide-border">
-              {NOTIFICATIONS.map((n) => {
-                const colors = NOTIF_COLORS[n.type as keyof typeof NOTIF_COLORS] ?? NOTIF_COLORS.info;
-                return (
-                  <div
-                    key={n.id}
-                    className={`flex gap-3.5 px-6 py-4 hover:bg-muted/30 transition-colors cursor-pointer ${!n.read ? "bg-primary/[0.03]" : ""}`}
-                  >
-                    <div className="mt-0.5 shrink-0">
-                      <div className={`size-8 rounded-full flex items-center justify-center ${colors.bg}`}>
-                        <BellIcon className="size-3.5 text-foreground/60" />
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className={`text-sm font-semibold leading-tight ${!n.read ? "text-foreground" : "text-muted-foreground"}`}>
-                          {n.title}
-                        </p>
-                        {!n.read && (
-                          <span className={`h-2 w-2 rounded-full shrink-0 mt-1.5 ${colors.dot}`} />
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{n.detail}</p>
-                      <p className="text-[11px] text-muted-foreground/50 mt-1.5">{n.time}</p>
+            {isLoading ? (
+              <div className="p-6 space-y-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex gap-3">
+                    <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3 w-1/3 bg-muted rounded animate-pulse" />
+                      <div className="h-2 w-3/4 bg-muted rounded animate-pulse" />
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="py-12 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
+                <BellIcon className="size-8 text-muted-foreground/40" strokeWidth={1.5} />
+                <p className="text-sm font-semibold">No notifications yet</p>
+                <p className="text-xs text-muted-foreground/80">You're all caught up!</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {notifications.map((n) => {
+                  const colors = NOTIF_COLORS[n.type] ?? NOTIF_COLORS.INFO;
+                  const Icon = colors.iconComponent;
+                  return (
+                    <div
+                      key={n.id}
+                      onClick={() => handleNotifClick(n)}
+                      className={`flex gap-3.5 px-6 py-4 hover:bg-muted/30 transition-colors cursor-pointer ${!n.read ? "bg-primary/[0.03]" : ""}`}
+                    >
+                      <div className="mt-0.5 shrink-0">
+                        <div className={`size-8 rounded-full flex items-center justify-center ${colors.bg}`}>
+                          <Icon className={`size-4 ${colors.text}`} />
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className={`text-sm font-semibold leading-tight ${!n.read ? "text-foreground font-semibold" : "text-muted-foreground font-normal"}`}>
+                            {n.title}
+                          </p>
+                          {!n.read && (
+                            <span className={`h-2 w-2 rounded-full shrink-0 mt-1.5 ${colors.dot}`} />
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{n.message}</p>
+                        <p className="text-[10px] text-muted-foreground/50 mt-2 font-medium">
+                          {formatNotifTime(n.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          <div className="px-6 py-4 border-t border-border">
-            <p className="text-xs text-muted-foreground/50 text-center">You're all caught up</p>
+          <div className="px-6 py-4 border-t border-border bg-muted/5">
+            <p className="text-[11px] text-muted-foreground/50 text-center">
+              Click a notification to navigate and resolve
+            </p>
           </div>
         </SheetContent>
       </Sheet>

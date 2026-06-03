@@ -157,3 +157,40 @@ model QuotationItem {
 
  @@map("quotation_items")
 }
+
+// ─── Notifications ─────────────────────────────────────────────────────────────
+
+enum NotificationType {
+ INFO
+ WARNING
+ SUCCESS
+}
+
+model Notification {
+ id String @id @default(cuid())
+
+ // Who receives this notification
+ userId String
+
+ // Event that triggered it: "QUOTATION_SUBMITTED" | "QUOTATION_APPROVED" | "QUOTATION_REJECTED" | "QUOTATION_FULFILLED"
+ event String
+
+ title String
+ message String
+ type NotificationType @default(INFO)
+
+ // Whether the user has dismissed/read it
+ read Boolean @default(false)
+
+ // Optional: link to the related entity (e.g. /admin/quotations/id)
+ link String?
+
+ // Related quotation (for linking)
+ quotationId String?
+
+ createdAt DateTime @default(now())
+
+ @@index([userId, createdAt(sort: Desc)])
+ @@index([userId, read])
+ @@map("notifications")
+}
