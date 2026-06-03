@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { smartFormatQty, formatQtyBoth, type UnitDimension } from "@/lib/units";
 
 const DEFAULT_UNITS: Record<
   string,
@@ -90,11 +91,17 @@ function formatInr(value: string | number): string {
 
 function formatStock(
   value: string | number,
+  dimension: string,
   threshold?: string | null,
-): { text: string; isLow: boolean } {
+): { display: string; both: string; isLow: boolean } {
   const num = typeof value === "string" ? parseFloat(value) : value;
   const isLow = threshold != null && num <= parseFloat(threshold);
-  return { text: num.toFixed(4), isLow };
+  const dim = (dimension as UnitDimension) ?? "COUNT";
+  return {
+    display: smartFormatQty(num, dim),
+    both: formatQtyBoth(num, dim),
+    isLow,
+  };
 }
 
 type ProductUnit = { unit: string; label: string; amountInBase: string };
@@ -294,7 +301,6 @@ export default function AdminProductsPage() {
               {products.map((p, idx) => {
                 const dim = DIM_CONFIG[p.dimension] ?? DIM_CONFIG.COUNT;
                 const DimIcon = dim.icon;
-                const stock = formatStock(p.stockQuantity, p.reorderThreshold);
                 return (
                   <TableRow
                     key={p.id}
@@ -347,16 +353,24 @@ export default function AdminProductsPage() {
 
                     {/* Stock */}
                     <TableCell className="text-right py-3.5">
-                      <div className="flex flex-col items-end gap-0.5">
-                        <span className={`font-mono text-sm font-semibold ${stock.isLow ? "text-destructive" : "text-foreground"}`}>
-                          {stock.text}
-                        </span>
-                        {stock.isLow && (
-                          <span className="flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400">
-                            <AlertTriangleIcon className="size-2.5" /> low stock
-                          </span>
-                        )}
-                      </div>
+                      {(() => {
+                        const stock = formatStock(p.stockQuantity, p.dimension, p.reorderThreshold);
+                        return (
+                          <div className="flex flex-col items-end gap-0.5">
+                            <span className={`font-mono text-sm font-semibold ${stock.isLow ? "text-destructive" : "text-foreground"}`}>
+                              {stock.display}
+                            </span>
+                            {stock.both !== stock.display && (
+                              <span className="text-[10px] text-muted-foreground/60 font-mono">{stock.both.split("(")[1]?.replace(")", "") ?? ""}</span>
+                            )}
+                            {stock.isLow && (
+                              <span className="flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                                <AlertTriangleIcon className="size-2.5" /> low stock
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </TableCell>
 
                     {/* Actions */}

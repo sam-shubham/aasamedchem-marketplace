@@ -13,6 +13,7 @@ import {
  SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { formatOrderQty, smartFormatQty, type UnitDimension } from "@/lib/units";
 
 const STATUS_CONFIG: Record<string, { label: string; className: string; icon: string }> = {
  PENDING: { label: "Pending", className: "bg-amber-500/10 text-amber-700 border-amber-500/20", icon: "clock" },
@@ -30,7 +31,7 @@ function formatInr(paisa: number): string {
 
 type QuotationItem = {
  id: string;
- product: { name: string };
+ product: { name: string; dimension?: string };
  orderUnit: string;
  orderQty: string;
  baseQty: string;
@@ -112,24 +113,31 @@ function QuotationCard({ quotation, onStatusChange }: { quotation: Quotation; on
  <thead className="border-b bg-muted/20">
  <tr>
  <th className="text-left px-4 py-2 text-xs text-muted-foreground font-medium">Product</th>
- <th className="text-left px-4 py-2 text-xs text-muted-foreground font-medium">Unit</th>
- <th className="text-right px-4 py-2 text-xs text-muted-foreground font-medium">Qty Ordered</th>
+ <th className="text-left px-4 py-2 text-xs text-muted-foreground font-medium">Qty Ordered</th>
  <th className="text-right px-4 py-2 text-xs text-muted-foreground font-medium">Base Qty</th>
- <th className="text-right px-4 py-2 text-xs text-muted-foreground font-medium">Rate (₹/base)</th>
+ <th className="text-right px-4 py-2 text-xs text-muted-foreground font-medium">Rate</th>
  <th className="text-right px-4 py-2 text-xs text-muted-foreground font-medium">Line Total</th>
  </tr>
  </thead>
  <tbody className="divide-y">
- {quotation.items?.map((item) => (
+ {quotation.items?.map((item) => {
+ const dim = (item.product as any)?.dimension as UnitDimension ?? "COUNT";
+ const orderedDisplay = formatOrderQty(item.orderQty, item.orderUnit, dim);
+ const baseDisplay = smartFormatQty(parseFloat(item.baseQty), dim);
+ return (
  <tr key={item.id} className="hover:bg-muted/20 transition-colors">
  <td className="px-4 py-2.5 font-medium text-foreground">{item.product?.name ?? "—"}</td>
- <td className="px-4 py-2.5 text-muted-foreground">{item.orderUnit}</td>
- <td className="px-4 py-2.5 text-right font-mono text-sm">{parseFloat(item.orderQty).toFixed(4)}</td>
- <td className="px-4 py-2.5 text-right font-mono text-sm">{parseFloat(item.baseQty).toFixed(4)}</td>
+ <td className="px-4 py-2.5">
+ <span className="inline-flex items-center bg-primary/8 border border-primary/15 text-primary rounded-md px-2 py-0.5 text-xs font-semibold font-mono">
+ {orderedDisplay}
+ </span>
+ </td>
+ <td className="px-4 py-2.5 text-right font-mono text-xs text-muted-foreground">{baseDisplay}</td>
  <td className="px-4 py-2.5 text-right font-mono text-sm">₹{parseFloat(item.pricePerBase).toFixed(4)}</td>
  <td className="px-4 py-2.5 text-right font-semibold text-foreground">{formatInr(item.lineTotal)}</td>
  </tr>
- ))}
+ );
+ })}
  </tbody>
  </table>
  </div>

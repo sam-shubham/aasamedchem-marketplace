@@ -11,6 +11,7 @@ import {
   ChevronUpIcon,
   LogOutIcon,
   UserIcon,
+  LayoutDashboardIcon,
 } from 'lucide-react';
 import {
   SidebarMenu,
@@ -45,11 +46,13 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { title: 'Products', url: '/admin/products', icon: PackageIcon, roles: ['ADMIN'] },
-  { title: 'Quotations', url: '/admin/quotations', icon: FileTextIcon, roles: ['ADMIN'] },
-  { title: 'My Orders', url: '/seller/orders', icon: ShoppingCartIcon, roles: ['SELLER'] },
-  { title: 'Browse Products', url: '/seller/products', icon: PackageIcon, roles: ['SELLER'] },
-  { title: 'Settings', url: '/settings', icon: Settings2Icon },
+  { title: 'Dashboard',       url: '/admin/dashboard',  icon: LayoutDashboardIcon, roles: ['ADMIN'] },
+  { title: 'Products',        url: '/admin/products',   icon: PackageIcon,         roles: ['ADMIN'] },
+  { title: 'Quotations',      url: '/admin/quotations', icon: FileTextIcon,        roles: ['ADMIN'] },
+  { title: 'Dashboard',       url: '/seller/dashboard', icon: LayoutDashboardIcon, roles: ['SELLER'] },
+  { title: 'My Orders',       url: '/seller/orders',    icon: ShoppingCartIcon,    roles: ['SELLER'] },
+  { title: 'Browse Products', url: '/seller/products',  icon: PackageIcon,         roles: ['SELLER'] },
+  { title: 'Settings',        url: '/settings',         icon: Settings2Icon },
 ];
 
 function NavMain() {

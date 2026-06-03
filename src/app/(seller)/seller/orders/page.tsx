@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { ShoppingCartIcon, CheckIcon, ClockIcon, XIcon, FileTextIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import {
  TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
+import { formatOrderQty, smartFormatQty, type UnitDimension } from "@/lib/units";
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
  PENDING: { label: "Pending", className: "bg-amber-500/10 text-amber-700 border-amber-500/20" },
@@ -39,7 +40,7 @@ function StatusIcon({ status }: { status: string }) {
 
 type QuotationItem = {
  id: string;
- product: { name: string };
+ product: { name: string; dimension?: string };
  orderUnit: string;
  orderQty: string;
  baseQty: string;
@@ -148,9 +149,8 @@ export default function SellerOrdersPage() {
  const isExpanded = expanded === order.id;
 
  return (
- <>
+ <Fragment key={order.id}>
  <TableRow
- key={order.id}
  className={`cursor-pointer border-b last:border-0 hover:bg-muted/30 transition-colors ${isExpanded ? "bg-muted/30" : ""}`}
  onClick={() => toggleExpand(order.id)}
  >
@@ -200,15 +200,24 @@ export default function SellerOrdersPage() {
  </tr>
  </thead>
  <tbody className="divide-y">
- {order.items?.map((item) => (
+ {order.items?.map((item) => {
+ const dim = (item.product as any)?.dimension as UnitDimension ?? "COUNT";
+ return (
  <tr key={item.id} className="py-2">
  <td className="py-2 font-medium text-foreground">{item.product?.name ?? "—"}</td>
- <td className="py-2 text-muted-foreground">{item.orderUnit}</td>
- <td className="py-2 text-right font-mono text-sm">{parseFloat(item.orderQty).toFixed(4)}</td>
+ <td className="py-2">
+ <span className="inline-flex items-center bg-primary/8 border border-primary/15 text-primary rounded-md px-2 py-0.5 text-[11px] font-semibold font-mono">
+ {formatOrderQty(item.orderQty, item.orderUnit, dim)}
+ </span>
+ </td>
+ <td className="py-2 text-right font-mono text-xs text-muted-foreground">
+ {smartFormatQty(parseFloat(item.baseQty), dim)}
+ </td>
  <td className="py-2 text-right font-mono text-sm">₹{parseFloat(item.pricePerBase).toFixed(4)}</td>
  <td className="py-2 text-right font-semibold text-foreground">{formatInr(item.lineTotal)}</td>
  </tr>
- ))}
+ );
+ })}
  </tbody>
  </table>
  </div>
@@ -229,7 +238,7 @@ export default function SellerOrdersPage() {
  </TableCell>
  </TableRow>
  )}
- </>
+ </Fragment>
  );
  })}
  </TableBody>

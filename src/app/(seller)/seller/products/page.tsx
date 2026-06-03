@@ -41,7 +41,10 @@ function getCartStorageKey(userId: string): string {
   return `sellerCart:${userId}`;
 }
 
-const DEFAULT_UNITS: Record<string, { unit: string; label: string; amountInBase: string }[]> = {
+const DEFAULT_UNITS: Record<
+  string,
+  { unit: string; label: string; amountInBase: string }[]
+> = {
   WEIGHT: [
     { unit: "g", label: "Grams (g)", amountInBase: "1" },
     { unit: "kg", label: "Kilograms (kg)", amountInBase: "1000" },
@@ -53,18 +56,22 @@ const DEFAULT_UNITS: Record<string, { unit: string; label: string; amountInBase:
   COUNT: [{ unit: "unit", label: "Unit / Item", amountInBase: "1" }],
 };
 
-const DIM_CONFIG: Record<string, {
-  label: string;
-  icon: React.ElementType;
-  badgeClass: string;
-  bgClass: string;
-  iconClass: string;
-  baseUnit: string;
-}> = {
+const DIM_CONFIG: Record<
+  string,
+  {
+    label: string;
+    icon: React.ElementType;
+    badgeClass: string;
+    bgClass: string;
+    iconClass: string;
+    baseUnit: string;
+  }
+> = {
   WEIGHT: {
     label: "Weight",
     icon: WeightIcon,
-    badgeClass: "bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400",
+    badgeClass:
+      "bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400",
     bgClass: "bg-blue-500/8",
     iconClass: "text-blue-500",
     baseUnit: "g",
@@ -72,7 +79,8 @@ const DIM_CONFIG: Record<string, {
   VOLUME: {
     label: "Volume",
     icon: BeakerIcon,
-    badgeClass: "bg-violet-500/10 text-violet-600 border-violet-500/20 dark:text-violet-400",
+    badgeClass:
+      "bg-violet-500/10 text-violet-600 border-violet-500/20 dark:text-violet-400",
     bgClass: "bg-violet-500/8",
     iconClass: "text-violet-500",
     baseUnit: "mL",
@@ -80,7 +88,8 @@ const DIM_CONFIG: Record<string, {
   COUNT: {
     label: "Count",
     icon: HashIcon,
-    badgeClass: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400",
+    badgeClass:
+      "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400",
     bgClass: "bg-emerald-500/8",
     iconClass: "text-emerald-500",
     baseUnit: "unit",
@@ -146,15 +155,18 @@ function ProductCard({
 }) {
   const [qty, setQty] = useState("");
   const [unit, setUnit] = useState(
-    product.units?.[0]?.unit ?? (DEFAULT_UNITS[product.dimension]?.[0]?.unit ?? "g"),
+    product.units?.[0]?.unit ??
+      DEFAULT_UNITS[product.dimension]?.[0]?.unit ??
+      "g",
   );
   const pricePerBase = parseFloat(product.pricePerBaseUnit);
   const availableUnits =
     product.units?.length > 0
       ? product.units
-      : DEFAULT_UNITS[product.dimension] ?? DEFAULT_UNITS.COUNT;
+      : (DEFAULT_UNITS[product.dimension] ?? DEFAULT_UNITS.COUNT);
 
-  const multiplier = availableUnits.find((u) => u.unit === unit)?.amountInBase ?? "1";
+  const multiplier =
+    availableUnits.find((u) => u.unit === unit)?.amountInBase ?? "1";
   const previewBase = (parseFloat(qty) || 0) * parseFloat(multiplier);
   const previewPaisa = Math.round(previewBase * pricePerBase * 100);
   const dim = DIM_CONFIG[product.dimension] ?? DIM_CONFIG.COUNT;
@@ -168,30 +180,49 @@ function ProductCard({
   }
 
   return (
-    <Card className={`border-border overflow-hidden flex flex-col transition-all duration-200 hover:shadow-md hover:border-primary/20 group ${cart ? "ring-1 ring-emerald-500/30 border-emerald-500/20" : ""}`}>
+    <Card
+      className={`border-border overflow-hidden flex flex-col transition-all duration-200 hover:shadow-md hover:border-primary/20 group ${cart ? "ring-1 ring-emerald-500/30 border-emerald-500/20" : ""}`}
+    >
       {/* In-cart indicator strip */}
       {cart && (
-        <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, var(--primary), oklch(0.60 0.19 215))" }} />
+        <div
+          className="h-1 w-full"
+          style={{
+            background:
+              "linear-gradient(90deg, var(--primary), oklch(0.60 0.19 215))",
+          }}
+        />
       )}
 
       <div className="p-5 flex flex-col gap-4 flex-1">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-3 min-w-0 flex-1">
-            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${dim.bgClass}`}>
+            <div
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${dim.bgClass}`}
+            >
               <DimIcon className={`size-5 ${dim.iconClass}`} />
             </div>
             <div className="min-w-0">
-              <h3 className="font-semibold text-foreground text-sm leading-tight truncate">{product.name}</h3>
+              <h3 className="font-semibold text-foreground text-sm leading-tight truncate">
+                {product.name}
+              </h3>
               {product.category && (
-                <p className="text-xs text-muted-foreground mt-0.5 truncate">{product.category}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                  {product.category}
+                </p>
               )}
               {product.sku && (
-                <p className="text-[10px] font-mono text-muted-foreground/60 mt-0.5">{product.sku}</p>
+                <p className="text-[10px] font-mono text-muted-foreground/60 mt-0.5">
+                  {product.sku}
+                </p>
               )}
             </div>
           </div>
-          <Badge variant="outline" className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 ${dim.badgeClass}`}>
+          <Badge
+            variant="outline"
+            className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 ${dim.badgeClass}`}
+          >
             {dim.label}
           </Badge>
         </div>
@@ -208,7 +239,9 @@ function ProductCard({
         {cart && (
           <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-lg px-2.5 py-1.5">
             <CheckIcon className="size-3.5 shrink-0" />
-            <span>{cart.qty} {cart.unit} added to cart</span>
+            <span>
+              {cart.qty} {cart.unit} added to cart
+            </span>
           </div>
         )}
 
@@ -221,7 +254,9 @@ function ProductCard({
               </SelectTrigger>
               <SelectContent>
                 {availableUnits.map((u) => (
-                  <SelectItem key={u.unit} value={u.unit}>{u.label}</SelectItem>
+                  <SelectItem key={u.unit} value={u.unit}>
+                    {u.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -240,7 +275,8 @@ function ProductCard({
           {hasQty && (
             <div className="flex items-center justify-between rounded-lg bg-muted/50 border border-border/60 px-3 py-2 animate-scale-in">
               <span className="text-xs text-muted-foreground">
-                {parseFloat(qty)} {unit} → {previewBase.toFixed(2)} {dim.baseUnit}
+                {parseFloat(qty)} {unit} → {previewBase.toFixed(2)}{" "}
+                {dim.baseUnit}
               </span>
               <span className="text-xs font-bold font-mono text-foreground">
                 {formatInr(previewPaisa)}
@@ -256,10 +292,15 @@ function ProductCard({
           onClick={handleAdd}
           className="w-full rounded-xl gap-2 h-9 text-sm font-semibold transition-all"
           disabled={!hasQty}
-          style={hasQty ? {
-            background: "linear-gradient(135deg, var(--primary), oklch(0.55 0.22 280))",
-            boxShadow: "0 2px 12px var(--primary-glow)",
-          } : {}}
+          style={
+            hasQty
+              ? {
+                  background:
+                    "linear-gradient(135deg, var(--primary), oklch(0.55 0.22 280))",
+                  boxShadow: "0 2px 12px var(--primary-glow)",
+                }
+              : {}
+          }
         >
           <ShoppingCartIcon className="size-4" />
           {cart ? "Update Cart" : "Add to Cart"}
@@ -270,8 +311,14 @@ function ProductCard({
 }
 
 function CartFooter({
-  cartItems, notes, onNotesChange, onPlace, ordering,
-  subtotal, taxAmount, totalAmount,
+  cartItems,
+  notes,
+  onNotesChange,
+  onPlace,
+  ordering,
+  subtotal,
+  taxAmount,
+  totalAmount,
 }: {
   cartItems: CartItem[];
   notes: string;
@@ -288,7 +335,10 @@ function CartFooter({
         {/* Notes */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Notes <span className="normal-case font-normal text-muted-foreground/60">(optional)</span>
+            Notes{" "}
+            <span className="normal-case font-normal text-muted-foreground/60">
+              (optional)
+            </span>
           </label>
           <textarea
             value={notes}
@@ -303,11 +353,15 @@ function CartFooter({
         <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-2">
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>Subtotal</span>
-            <span className="font-mono font-medium text-foreground">{formatInr(subtotal)}</span>
+            <span className="font-mono font-medium text-foreground">
+              {formatInr(subtotal)}
+            </span>
           </div>
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>GST (18%)</span>
-            <span className="font-mono font-medium text-foreground">{formatInr(taxAmount)}</span>
+            <span className="font-mono font-medium text-foreground">
+              {formatInr(taxAmount)}
+            </span>
           </div>
           <div className="flex justify-between text-sm font-bold text-foreground pt-2 border-t border-border">
             <span>Total</span>
@@ -320,14 +374,19 @@ function CartFooter({
           disabled={ordering}
           className="w-full rounded-xl gap-2 h-11 font-semibold"
           style={{
-            background: "linear-gradient(135deg, var(--primary), oklch(0.55 0.22 280))",
+            background:
+              "linear-gradient(135deg, var(--primary), oklch(0.55 0.22 280))",
             boxShadow: "0 2px 16px var(--primary-glow)",
           }}
         >
           {ordering ? (
-            <><Spinner size="sm" /> Placing Quotation...</>
+            <>
+              <Spinner size="sm" /> Placing Quotation...
+            </>
           ) : (
-            <><ShoppingCartIcon className="size-4" /> Place Quotation</>
+            <>
+              <ShoppingCartIcon className="size-4" /> Place Quotation
+            </>
           )}
         </Button>
       </div>
@@ -345,7 +404,10 @@ export default function SellerProductsPage() {
   const [showCart, setShowCart] = useState(false);
   const [ordering, setOrdering] = useState(false);
   const [notes, setNotes] = useState("");
-  const [submitted, setSubmitted] = useState<{ reference?: string; totalAmount: number } | null>(null);
+  const [submitted, setSubmitted] = useState<{
+    reference?: string;
+    totalAmount: number;
+  } | null>(null);
   const userId = useAuthStore((state) => state.user?.id);
 
   useEffect(() => {
@@ -370,7 +432,10 @@ export default function SellerProductsPage() {
 
   useEffect(() => {
     if (!userId || !cartHydrated) return;
-    window.localStorage.setItem(getCartStorageKey(userId), JSON.stringify(cart));
+    window.localStorage.setItem(
+      getCartStorageKey(userId),
+      JSON.stringify(cart),
+    );
   }, [cart, cartHydrated, userId]);
 
   useEffect(() => {
@@ -389,12 +454,19 @@ export default function SellerProductsPage() {
   }
 
   function addToCart(product: Product, unit: string, qty: number) {
-    const availableUnits = product.units?.length > 0 ? product.units : DEFAULT_UNITS[product.dimension] ?? DEFAULT_UNITS.COUNT;
-    const multiplier = availableUnits.find((u) => u.unit === unit)?.amountInBase ?? "1";
+    const availableUnits =
+      product.units?.length > 0
+        ? product.units
+        : (DEFAULT_UNITS[product.dimension] ?? DEFAULT_UNITS.COUNT);
+    const multiplier =
+      availableUnits.find((u) => u.unit === unit)?.amountInBase ?? "1";
     const baseQty = qty * parseFloat(multiplier);
     const pricePerBase = parseFloat(product.pricePerBaseUnit);
     const lineTotal = Math.round(baseQty * pricePerBase * 100);
-    setCart((prev) => ({ ...prev, [product.id]: { product, unit, qty, baseQty, lineTotal, pricePerBase } }));
+    setCart((prev) => ({
+      ...prev,
+      [product.id]: { product, unit, qty, baseQty, lineTotal, pricePerBase },
+    }));
     toast.success(`${product.name} added to cart`);
   }
 
@@ -414,7 +486,11 @@ export default function SellerProductsPage() {
 
   async function placeOrder() {
     setOrdering(true);
-    const items = cartItems.map((c) => ({ productId: c.product.id, unit: c.unit, quantity: c.qty }));
+    const items = cartItems.map((c) => ({
+      productId: c.product.id,
+      unit: c.unit,
+      quantity: c.qty,
+    }));
     try {
       const res = await fetch("/api/quotations", {
         method: "POST",
@@ -444,11 +520,21 @@ export default function SellerProductsPage() {
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-              style={{ background: "linear-gradient(135deg, var(--primary), oklch(0.55 0.22 280))" }}>
-              <FlaskConicalIcon className="size-4 text-white" strokeWidth={1.5} />
+            <div
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--primary), oklch(0.55 0.22 280))",
+              }}
+            >
+              <FlaskConicalIcon
+                className="size-4 text-white"
+                strokeWidth={1.5}
+              />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Browse Products</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Browse Products
+            </h1>
           </div>
           <p className="text-sm text-muted-foreground pl-[2.625rem]">
             Browse catalog and create quotation requests
@@ -459,10 +545,15 @@ export default function SellerProductsPage() {
         <Button
           onClick={() => setShowCart(true)}
           className="gap-2 relative shrink-0 rounded-xl h-10"
-          style={cartCount > 0 ? {
-            background: "linear-gradient(135deg, var(--primary), oklch(0.55 0.22 280))",
-            boxShadow: "0 2px 12px var(--primary-glow)",
-          } : {}}
+          style={
+            cartCount > 0
+              ? {
+                  background:
+                    "linear-gradient(135deg, var(--primary), oklch(0.55 0.22 280))",
+                  boxShadow: "0 2px 12px var(--primary-glow)",
+                }
+              : {}
+          }
           variant={cartCount > 0 ? "default" : "outline"}
         >
           <ShoppingCartIcon className="size-4" />
@@ -510,7 +601,9 @@ export default function SellerProductsPage() {
       {/* ── Product grid ── */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)}
+          {Array.from({ length: 6 }).map((_, i) => (
+            <ProductCardSkeleton key={i} />
+          ))}
         </div>
       ) : products.length === 0 ? (
         <Card className="border-border flex flex-col items-center justify-center py-20 gap-5">
@@ -518,13 +611,25 @@ export default function SellerProductsPage() {
             <PackageIcon className="size-7 text-muted-foreground" />
           </div>
           <div className="text-center space-y-1">
-            <p className="text-base font-semibold text-foreground">No products found</p>
+            <p className="text-base font-semibold text-foreground">
+              No products found
+            </p>
             <p className="text-sm text-muted-foreground">
-              {search || dimension !== "ALL" ? "Try adjusting your search or filters" : "No products available yet"}
+              {search || dimension !== "ALL"
+                ? "Try adjusting your search or filters"
+                : "No products available yet"}
             </p>
           </div>
           {(search || dimension !== "ALL") && (
-            <Button variant="outline" size="sm" onClick={() => { setSearch(""); setDimension("ALL"); }} className="rounded-xl gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSearch("");
+                setDimension("ALL");
+              }}
+              className="rounded-xl gap-1.5"
+            >
               Clear filters
             </Button>
           )}
@@ -549,14 +654,23 @@ export default function SellerProductsPage() {
           {/* Cart header */}
           <SheetHeader className="px-6 pt-6 pb-4 border-b border-border">
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-                style={{ background: "linear-gradient(135deg, var(--primary), oklch(0.55 0.22 280))" }}>
+              <div
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                style={{
+                  background:
+                    "linear-gradient(135deg, var(--primary), oklch(0.55 0.22 280))",
+                }}
+              >
                 <ShoppingCartIcon className="size-4 text-white" />
               </div>
               <div>
-                <SheetTitle className="text-base font-bold text-foreground">Your Cart</SheetTitle>
+                <SheetTitle className="text-base font-bold text-foreground">
+                  Your Cart
+                </SheetTitle>
                 <SheetDescription className="text-xs text-muted-foreground">
-                  {cartCount > 0 ? `${cartCount} item${cartCount > 1 ? "s" : ""} · ${formatInr(subtotal)} subtotal` : "No items yet"}
+                  {cartCount > 0
+                    ? `${cartCount} item${cartCount > 1 ? "s" : ""} · ${formatInr(subtotal)} subtotal`
+                    : "No items yet"}
                 </SheetDescription>
               </div>
             </div>
@@ -569,29 +683,44 @@ export default function SellerProductsPage() {
                   <ShoppingCartIcon className="size-7 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">Your cart is empty</p>
-                  <p className="text-xs text-muted-foreground mt-1">Add products from the catalog</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    Your cart is empty
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Add products from the catalog
+                  </p>
                 </div>
               </div>
             ) : (
               <div className="divide-y divide-border">
                 {cartItems.map((c) => {
-                  const dim = DIM_CONFIG[c.product.dimension] ?? DIM_CONFIG.COUNT;
+                  const dim =
+                    DIM_CONFIG[c.product.dimension] ?? DIM_CONFIG.COUNT;
                   const DimIcon = dim.icon;
                   return (
-                    <div key={c.product.id} className="px-6 py-4 hover:bg-muted/30 transition-colors group">
+                    <div
+                      key={c.product.id}
+                      className="px-6 py-4 hover:bg-muted/30 transition-colors group"
+                    >
                       <div className="flex items-start gap-3">
-                        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${dim.bgClass}`}>
+                        <div
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${dim.bgClass}`}
+                        >
                           <DimIcon className={`size-4 ${dim.iconClass}`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-foreground leading-tight truncate">{c.product.name}</p>
+                          <p className="text-sm font-semibold text-foreground leading-tight truncate">
+                            {c.product.name}
+                          </p>
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            {c.qty} {c.unit} · {c.baseQty.toFixed(2)} {dim.baseUnit}
+                            {c.qty} {c.unit} · {c.baseQty.toFixed(2)}{" "}
+                            {dim.baseUnit}
                           </p>
                         </div>
                         <div className="flex flex-col items-end gap-1.5">
-                          <p className="font-mono font-bold text-sm text-foreground">{formatInr(c.lineTotal)}</p>
+                          <p className="font-mono font-bold text-sm text-foreground">
+                            {formatInr(c.lineTotal)}
+                          </p>
                           <button
                             onClick={() => removeFromCart(c.product.id)}
                             className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
@@ -627,11 +756,18 @@ export default function SellerProductsPage() {
       {submitted && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
           <Card className="border-border w-full max-w-sm mx-4 p-8 text-center shadow-2xl animate-scale-in">
-            <div className="flex size-16 items-center justify-center rounded-2xl mx-auto mb-5"
-              style={{ background: "linear-gradient(135deg, var(--success), oklch(0.55 0.20 160))" }}>
+            <div
+              className="flex size-16 items-center justify-center rounded-2xl mx-auto mb-5"
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--success), oklch(0.55 0.20 160))",
+              }}
+            >
               <SparklesIcon className="size-8 text-white" />
             </div>
-            <h2 className="text-xl font-bold text-foreground mb-1">Quotation Placed!</h2>
+            <h2 className="text-xl font-bold text-foreground mb-1">
+              Quotation Placed!
+            </h2>
             <p className="text-sm text-muted-foreground mb-1">
               Reference:{" "}
               <span className="font-mono font-bold text-foreground tracking-wider">
@@ -640,12 +776,17 @@ export default function SellerProductsPage() {
             </p>
             <p className="text-sm text-muted-foreground mb-6">
               Total:{" "}
-              <span className="font-bold text-foreground">{formatInr(submitted.totalAmount)}</span>
+              <span className="font-bold text-foreground">
+                {formatInr(submitted.totalAmount)}
+              </span>
             </p>
             <Button
               onClick={() => setSubmitted(null)}
               className="rounded-xl w-full"
-              style={{ background: "linear-gradient(135deg, var(--primary), oklch(0.55 0.22 280))" }}
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--primary), oklch(0.55 0.22 280))",
+              }}
             >
               Continue Browsing
             </Button>
