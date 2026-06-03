@@ -17,7 +17,7 @@ type NotifStore = {
  notifications: Notification[];
  unreadCount: number;
  isLoading: boolean;
- setNotifications: (n: Notification[], total: number) => void;
+ setNotifications: (n: Notification[]) => void;
  markRead: (id: string) => Promise<void>;
  markAllRead: () => Promise<void>;
  fetchNotifications: () => Promise<void>;
