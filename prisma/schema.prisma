@@ -1,0 +1,159 @@
+// AasaMedChem Inventory & Order Management System
+// Prisma schema — PostgreSQL via Neon
+
+generator client {
+ provider = "prisma-client"
+ output = "../src/generated/prisma"
+}
+
+datasource db {
+ provider = "postgresql"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+// Dimension of a product's quantity
+enum UnitDimension {
+ WEIGHT // gram-based: g, kg
+ VOLUME // litre-based: mL, L
+ COUNT // unitless items
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+// User: admin or seller
+model User {
+ id String @id @default(cuid())
+ name String
+ email String @unique
+ password String // bcrypt hash
+ role Role @default(SELLER)
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+
+ quotations Quotation[]
+
+ @@map("users")
+}
+
+enum Role {
+ ADMIN
+ SELLER
+}
+
+// Product: stored in a BASE UNIT per dimension
+model Product {
+ id String @id @default(cuid())
+ name String
+ description String?
+ category String?
+ sku String? @unique
+
+ // Unit dimension and base storage unit
+ // WEIGHT → base = "g"
+ // VOLUME → base = "mL"
+ // COUNT → base = "unit"
+ dimension UnitDimension
+
+ // Conversion factor FROM base unit TO display/sell unit "1"
+ // e.g. 1000 g → baseUnitAmount = 1000 (base=g, display=kg)
+ // e.g. 1000 mL → baseUnitAmount = 1000 (base=mL, display=L)
+ // e.g. 1 → baseUnitAmount = 1 (base=unit, display=unit)
+ baseUnitAmount Decimal @default("1")
+
+ // Price in INR per ONE base unit (decimal, high precision)
+ pricePerBaseUnit Decimal @db.Decimal(14, 4)
+
+ // Current stock level in BASE UNITS (always consistent across dimension)
+ stockQuantity Decimal @db.Decimal(14, 4) @default(0)
+
+ // Low-stock alert threshold in BASE UNITS
+ reorderThreshold Decimal? @db.Decimal(14, 4)
+
+ // Available display/sell units for this product
+ units ProductUnit[]
+
+ // Quotations that contain this product
+ quotationItems QuotationItem[]
+
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+
+ @@map("products")
+}
+
+// Per-product available unit with its label and conversion factor
+// The `amountInBase` field tells us: "to get 1 of this unit, how many base units?"
+model ProductUnit {
+ id String @id @default(cuid())
+ productId String
+ unit String // "g", "kg", "mL", "L", "unit"
+ label String // "Grams", "Kilograms", "Millilitres", "Litres", "Unit/Item"
+ // How many base units equal 1 of this unit?
+ // e.g. for a WEIGHT product: 1 kg → 1000 g, so amountInBase = 1000
+ amountInBase Decimal @db.Decimal(14, 4)
+
+ product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+ @@unique([productId, unit])
+ @@map("product_units")
+}
+
+// A quotation (order/quote) placed by a seller
+model Quotation {
+ id String @id @default(cuid())
+ reference String @unique @default(cuid())
+
+ // "PENDING" | "APPROVED" | "REJECTED" | "FULFILLED"
+ status QuotationStatus @default(PENDING)
+
+ requestedById String
+ requestedBy User @relation(fields: [requestedById], references: [id])
+
+ // All monetary totals stored as integers in paise (₹)
+ subtotal Int @default(0) // in paisa
+ taxAmount Int @default(0) // in paisa
+ totalAmount Int @default(0) // in paisa
+
+ notes String?
+
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+
+ items QuotationItem[]
+
+ @@map("quotations")
+}
+
+enum QuotationStatus {
+ PENDING
+ APPROVED
+ REJECTED
+ FULFILLED
+}
+
+// Line item in a quotation — stores the unit chosen at time of order
+model QuotationItem {
+ id String @id @default(cuid())
+ quotationId String
+ productId String
+
+ // The unit the seller ordered in
+ orderUnit String // "kg", "g", "L", "mL", "unit"
+ // Quantity in the order unit
+ orderQty Decimal @db.Decimal(14, 4)
+
+ // Converted to BASE UNITS for stock deduction
+ baseQty Decimal @db.Decimal(14, 4)
+
+ // Price per base unit at time of order
+ pricePerBase Decimal @db.Decimal(14, 4)
+
+ // Line total in paisa
+ lineTotal Int
+
+ quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+ product Product @relation(fields: [productId], references: [id])
+
+ @@map("quotation_items")
+}
