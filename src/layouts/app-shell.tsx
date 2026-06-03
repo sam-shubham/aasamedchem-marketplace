@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -120,6 +121,8 @@ function ShellHeader() {
           </div>
 
           <div className="ml-auto flex items-center gap-1">
+            <ThemeToggle className="h-8 rounded-xl px-3 text-muted-foreground hover:text-foreground hover:bg-muted/60" />
+
             {/* Notification bell */}
             <Button
               variant="ghost"
