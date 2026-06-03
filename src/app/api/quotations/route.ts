@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
  userId: a.id,
  event: "QUOTATION_SUBMITTED",
  title: "New Quotation Received",
- message: `${session.user.name} submitted quotation #${ref} for ₹${(totalAmount / 100).toLocaleString("en-IN", { minimumFractionDigits: 2 })}.`,
+ message: `${session.name} submitted quotation #${ref} for ₹${(totalAmount / 100).toLocaleString("en-IN", { minimumFractionDigits: 2 })}.`,
  type: "INFO",
  link: "/admin/quotations",
  quotationId: quotation.id,
