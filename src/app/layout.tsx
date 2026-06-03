@@ -10,6 +10,7 @@ import MainLayout from "@/layouts/main-shell";
 export const metadata: Metadata = {
   title: "AasaMedChem — Inventory & Order Management",
   description: "Inventory, quotation and order management for AasaMedChem",
+  
 };
 
 const nunito = Nunito({
@@ -39,6 +40,7 @@ export default function RootLayout({
         "font-sans",
       )}
     >
+    
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
